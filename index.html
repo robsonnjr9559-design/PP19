@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    
+    <title>SKY GOLD</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #000000;
+            --main-color: #FFD700; /* Tom GOLD */
+            --font-xs: 1.8vh; --font-sm: 2.2vh; --font-md: 3vh; --font-lg: 5vh;
+        }
+
+        * { 
+            margin: 0; padding: 0; box-sizing: border-box; outline: none; 
+            -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;           
+        }
+        
+        html, body {
+            background: #000000; color: #ffffff; font-family: 'Montserrat', sans-serif;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; 
+            overflow: hidden !important; overscroll-behavior: none; touch-action: none;
+            transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0);
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+        }
+
+        .hide { display: none !important; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: transparent; overflow: hidden; }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #000; z-index: 999999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .splash-logo {
+            font-size: 10vh; font-weight: 900;
+            animation: pulseLogo 2s infinite ease-in-out, popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .splash-spinner { margin-top: 4vh; font-size: 6vh; color: var(--main-color); }
+        
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulseLogo { 0%, 100% { transform: scale(1); text-shadow: 0 0 0 rgba(255, 215, 0, 0); } 50% { transform: scale(1.05); text-shadow: 0 0 25px rgba(255, 215, 0, 0.6); } }
+
+        #orientation-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 99999; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--main-color); text-align: center; font-weight: 900; font-size: 3vh;
+        }
+        .phone-icon { font-size: 10vh; margin-bottom: 20px; animation: rotatePhone 2s infinite ease-in-out; }
+        @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); opacity: 0; } 25%, 50% { transform: rotate(-90deg); opacity: 1; } 75% { transform: rotate(-90deg); opacity: 0; } }
+        @media screen and (max-width: 768px) and (orientation: portrait) { #orientation-overlay { display: flex !important; } }
+
+        button, .cat-item, .item, .key, .toggle-btn { cursor: pointer; }
+        
+        .focused { 
+            border: 3px solid #fff !important; background: var(--main-color) !important; color: #000 !important; 
+            z-index: 50; box-shadow: none !important; transform: scale(1.02) translateZ(0) !important;
+            transition: transform 0.1s ease-out, background 0.1s;
+        }
+        .focused i, .focused span, .focused div { color: #000 !important; }
+        
+        #vid-box.focused { border: 4px solid var(--main-color) !important; background: transparent !important; transform: none !important; }
+        #vid-box.fs, #vid-box.fs.focused { border: none !important; width: 100% !important; height: 100% !important; z-index: 9999 !important; position: fixed !important; top: 0 !important; left: 0 !important; background: #000 !important; transform: none !important; }
+
+        .login-box { width: 450px; max-width: 90%; padding: 40px; background: #0a0a0a; border: 2px solid var(--main-color); border-radius: 12px; text-align: center; }
+        .logo-txt { font-size: 4.5vh; font-weight: 900; margin-bottom: 2.5vh; }
+        .theme-text { color: var(--main-color); }
+        .inp { width: 100%; padding: 16px; margin: 10px 0; background: #1a1a1a; border: 1px solid #333; color: #fff; text-align: center; font-weight: 600; border-radius: 8px; font-size: 16px; }
+        .btn { width: 100%; padding: 16px; margin-top: 20px; background: var(--main-color); color: #000; border: none; font-weight: 900; border-radius: 8px; font-size: 16px; }
+        .btn-logout { background: #333; color: #fff; margin-top: 10px; border: 1px solid #444; }
+
+        .config-row { display: flex; gap: 1vw; margin: 2vh 0; }
+        .toggle-btn { flex: 1; padding: 1.5vh; background: #1a1a1a; border: 1px solid #333; color: #888; font-size: var(--font-sm); font-weight: 800; border-radius: 1vh; }
+        .info-row { display: flex; justify-content: space-between; padding: 1vh 0; border-bottom: 1px solid #222; font-size: var(--font-sm); color: #ccc; }
+
+        /* --- CONTENT LAYER --- */
+        #content-layer { display: flex; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        .col-cat { width: 25%; background: #08080a; display: flex; flex-direction: column; border-right: 2px solid #1a1a1a; height: 100%; overflow: hidden; }
+        .col-list { width: 35%; background: #101014; display: flex; flex-direction: column; border-right: 2px solid #1a1a1a; height: 100%; overflow: hidden; }
+        .col-play { flex: 1; display: flex; flex-direction: column; position: relative; background: #000; height: 100%; overflow: hidden; }
+
+        .cat-head { padding: 15px; background: #15151a; border-bottom: 2px solid #222; flex-shrink: 0; }
+        .cat-top-row { display: flex; align-items: center; width: 100%; justify-content: center; }
+        .cat-title { color: var(--main-color); font-size: var(--font-md); font-weight: 900; }
+        
+        .cat-list, .item-list { flex: 1; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; will-change: transform; transform: translateZ(0); touch-action: pan-y; }
+        
+        .cat-item, .item { padding: 14px 20px; border-radius: 6px; margin: 6px 12px; color: #888; font-size: var(--font-sm); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
+        .cat-item.active { background: #1a1a1a; color: #fff; border-left: 4px solid var(--main-color); }
+        
+        .search-area { padding: 15px; background: #050505; border-bottom: 2px solid #1a1a1a; flex-shrink: 0; }
+        .inp-search { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; font-size: var(--font-sm); font-weight: bold; border-radius: 6px; text-transform: uppercase; text-align: center; }
+        
+        .item { border-bottom: 1px solid #1a1a1a; }
+        .item.playing { color: var(--main-color); background: #111; border-left: 4px solid var(--main-color); }
+        .fav-icon { float: right; color: var(--main-color); }
+
+        .vid-box { 
+            width: 100%; height: 50vh; background: #000; position: relative; border-bottom: 2px solid #222; overflow: hidden; flex-shrink: 0;
+            touch-action: manipulation; transform: translateZ(0); 
+        }
+        
+        #player-container { width:100%; height:100%; background:#000; transform: translateZ(0); }
+        video { width: 100%; height: 100%; object-fit: fill; background: #000; z-index: 1; transform: translateZ(0); }
+
+        .buffer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        
+        .buffer-spinner { font-size: 8vh; color: var(--main-color); text-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+
+        .meta { padding: 25px; flex: 1; height: 100%; overflow-y: auto; background: #0a0a0c; display: flex; flex-direction: column; }
+        .meta-title { font-size: var(--font-lg); color: var(--main-color); font-weight: 900; margin-bottom: 1vh; }
+        .meta-desc { font-size: var(--font-sm); color: #999; margin-bottom: 2vh; }
+
+        /* Nova Linha de Informações do Usuário */
+        .user-info-bar { 
+            display: flex; justify-content: space-between; align-items: center; gap: 20px; 
+            background: #111; padding: 15px 25px; border-radius: 8px; border: 1px solid #222; 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5); flex-wrap: wrap; margin-bottom: 2vh;
+        }
+        .ui-item { display: flex; align-items: center; font-size: var(--font-sm); color: #aaa; }
+        .ui-item i { color: var(--main-color); margin-right: 10px; font-size: 1.2em; }
+        .ui-val { color: #fff; font-weight: 800; margin-left: 5px; text-transform: uppercase; }
+        
+        .keys { display: flex; justify-content: space-between; align-items: center; gap: 1vw; padding-top: 2vh; border-top: 2px solid #1a1a1a; margin-top: auto; flex-shrink: 0; }
+        .key { flex: 1; font-size: var(--font-xs); color: #fff; font-weight: 700; background: #1a1a1a; border: 1px solid #333; padding: 1.2vh 0.5vw; border-radius: 0.8vh; display: flex; align-items: center; justify-content: center; white-space: nowrap; }
+        .dot { width: 1.2vh; height: 1.2vh; border-radius: 50%; flex-shrink: 0; margin-right: 1.2vw; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+    </style>
+</head>
+<body onload="App.init()">
+
+    <div id="splash-screen" style="display: none;">
+        <div class="splash-logo"><span style="color:#fff">SKY</span> <span class="theme-text">GOLD</span></div>
+        <i class="fas fa-circle-notch fa-spin splash-spinner"></i>
+    </div>
+
+    <div id="orientation-overlay">
+        <i class="fas fa-mobile-alt phone-icon"></i>
+        <div>POR FAVOR<br><span style="color: var(--main-color);">GIRE A TELA</span></div>
+    </div>
+
+    <div id="login-layer" class="layer flex-center hide">
+        <div class="login-box">
+            <div class="logo-txt"><span style="color:#fff">SKY</span>&nbsp;<span class="theme-text">GOLD</span></div>
+            <input type="text" id="i0" class="inp focusable" placeholder="URL DNS" autocomplete="off">
+            <input type="text" id="i1" class="inp focusable" placeholder="USUÁRIO" autocomplete="off">
+            <input type="password" id="i2" class="inp focusable" placeholder="SENHA" autocomplete="off">
+            <button id="i3" class="btn focusable" onclick="App.login(false)">ENTRAR AGORA</button>
+            <div id="msg-login" style="color:var(--main-color); margin-top:20px; font-size:var(--font-sm); font-weight: 800;"></div>
+        </div>
+    </div>
+
+    <div id="settings-layer" class="layer hide flex-center">
+        <div class="login-box">
+            <div class="logo-txt" id="set-title-txt"><i class="fas fa-user-shield" style="margin-right:10px; color: var(--main-color);"></i>MINHA <span class="theme-text">CONTA</span></div>
+            <div class="info-row"><span>USUÁRIO:</span> <span id="set-user">...</span></div>
+            <div class="info-row"><span>VENCIMENTO:</span> <span id="set-exp">...</span></div>
+            <div class="info-row"><span>TELAS:</span> <span id="set-conn">...</span></div>
+            
+            <div class="config-row" style="margin-top: 30px;"><div id="s0" class="toggle-btn focusable" style="border-color: #333; background: #111; cursor: default;">OPÇÕES</div></div>
+            <div class="config-row">
+                <div id="s1" class="toggle-btn focusable" onclick="App.toggleCfg('filter')"><span>FILTRO +18:</span> <span id="lbl-filter" style="color:#fff">NÃO</span></div>
+                <div id="s2" class="toggle-btn focusable" onclick="App.toggleFormat()"><span>FMT:</span> <span id="lbl-format" style="color:#fff">TS NAT</span></div>
+            </div>
+            
+            <button id="s3" class="btn focusable" onclick="App.closeSettings()" style="background: #333; color: #fff; margin-top: 20px;">VOLTAR À TV</button>
+            <button id="s4" class="btn btn-logout focusable" onclick="App.logout()">SAIR / DESLOGAR</button>
+        </div>
+    </div>
+
+    <div id="content-layer" class="layer hide">
+        <div class="col-cat">
+            <div class="cat-head">
+                <div class="cat-top-row">
+                    <div class="cat-title"><span style="color:#fff">SKY</span> GOLD</div>
+                </div>
+                <div id="item-count" style="font-size: 0.75em; margin-top: 15px; opacity: 0.7; text-align: center; font-weight: bold;">TOTAL: ...</div>
+            </div>
+            <div id="cat-list" class="cat-list"></div>
+        </div>
+        
+        <div class="col-list">
+            <div class="search-area"><input type="text" id="search" class="inp-search focusable" placeholder="BUSCAR CANAL..." autocomplete="off"></div>
+            <div id="item-list" class="item-list"></div>
+        </div>
+        
+        <div class="col-play">
+            <div id="vid-box" class="vid-box focusable" onclick="App.handleVideoTap(event)">
+                <div id="player-container">
+                    <video id="player" playsinline webkit-playsinline></video>
+                </div>
+                
+                <div id="smart-buffer" class="buffer-overlay">
+                    <i class="fas fa-circle-notch fa-spin buffer-spinner"></i>
+                </div>
+            </div>
+            
+            <div class="meta">
+                <div id="meta-title" class="meta-title"><span style="color:#fff">SKY</span>&nbsp;GOLD</div>
+                <div id="meta-desc" class="meta-desc">Escolha um canal na lista para assistir.</div>
+                
+                <div class="user-info-bar">
+                    <div class="ui-item"><i class="fas fa-user"></i> Usuário: <span id="ui-user" class="ui-val">...</span></div>
+                    <div class="ui-item"><i class="fas fa-calendar-alt"></i> Expira: <span id="ui-exp" class="ui-val">...</span></div>
+                    <div class="ui-item"><i class="fas fa-desktop"></i> Telas: <span id="ui-conn" class="ui-val">...</span></div>
+                </div>
+                
+                <div class="keys">
+                    <div class="key" id="key-fs"><div class="dot" style="background-color:#FF0000; box-shadow: 0 0 10px #FF0000;"></div> TELA CHEIA</div>
+                    <div class="key" id="key-top"><div class="dot" style="background-color:#00C851; box-shadow: 0 0 10px #00C851;"></div> TOPO</div>
+                    <div class="key" id="key-search"><div class="dot" style="background-color:#ffbb33; box-shadow: 0 0 10px #ffbb33;"></div> BUSCAR</div>
+                    <div class="key" id="key-menu"><div class="dot" style="background-color:#33b5e5; box-shadow: 0 0 10px #33b5e5;"></div> CONFIG.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function safePlay(vidElement) {
+            if (!vidElement) return;
+            try { 
+                var p = vidElement.play(); 
+                if (p !== undefined && typeof p.catch === 'function') { 
+                    p.catch(function(e) {}); 
+                } 
+            } catch (e) {}
+        }
+
+        function requestNativeFullscreen(elem) {
+            var target = elem || document.documentElement;
+            try {
+                if (target.requestFullscreen) { var p = target.requestFullscreen(); if(p !== undefined && typeof p.catch === 'function') { p.catch(function(){}); } } 
+                else if (target.webkitRequestFullscreen) { target.webkitRequestFullscreen(); }
+            } catch (e) {}
+        }
+
+        var FavManager = {
+            key: 'rc_favs_smart', list: [],
+            init: function() { var s = localStorage.getItem(this.key); this.list = s ? JSON.parse(s) : []; },
+            toggle: function(id) { var idx = this.list.indexOf(id); if(idx > -1) this.list.splice(idx, 1); else this.list.push(id); localStorage.setItem(this.key, JSON.stringify(this.list)); if (App && App.renderList) App.renderList(); },
+            isFav: function(id) { return this.list.indexOf(id) > -1; }
+        };
+
+        var PlayerEngine = {
+            video: null, url: null, monitorTimer: null, lastTime: 0, stallCount: 0, retryCount: 0, isBuffering: false, maxRetries: 999999,
+
+            init: function() { this.bindVideo(); },
+
+            bindVideo: function() {
+                this.video = document.getElementById('player'); 
+                if(!this.video) return;
+                
+                this.video.onerror = function() { PlayerEngine.handleError(); };
+                this.video.onabort = function() { PlayerEngine.handleError(); };
+                this.video.onstalled = function() { PlayerEngine.showBuffer(); };
+                this.video.onended = function() { PlayerEngine.handleError(); };
+
+                this.video.addEventListener('playing', function() { PlayerEngine.onPlaySuccess(); });
+                this.video.addEventListener('waiting', function() { PlayerEngine.showBuffer(); });
+                this.video.controls = false;
+            },
+
+            resetDOM: function() {
+                if(this.video) {
+                    try { this.video.pause(); } catch(e){}
+                    this.video.removeAttribute('src'); 
+                    this.video.load(); 
+                }
+            },
+
+            play: function(url) {
+                if (!url) return;
+                if(this.url === url && !this.video.error) {
+                    if(this.video.paused) safePlay(this.video);
+                    return;
+                }
+                if (this.url && this.url !== url) {
+                    this.hardStop();
+                    this.resetDOM(); 
+                }
+                this.url = url; this.stallCount = 0; this.retryCount = 0;
+                this.showBuffer();
+                
+                if(this.video) {
+                    this.video.src = url; 
+                    safePlay(this.video);
+                }
+                this.startMonitor();
+            },
+            
+            onPlaySuccess: function() { this.stallCount = 0; this.retryCount = 0; this.hideBuffer(); },
+            showBuffer: function() { this.isBuffering = true; var el = document.getElementById('smart-buffer'); if(el) el.style.display = 'flex'; },
+            hideBuffer: function() { this.isBuffering = false; var el = document.getElementById('smart-buffer'); if(el) el.style.display = 'none'; },
+            
+            startMonitor: function() {
+                this.stopMonitor();
+                this.monitorTimer = setInterval(function() {
+                    var v = PlayerEngine.video; 
+                    if(!v || !PlayerEngine.url || v.paused) return;
+                    if(Math.abs(v.currentTime - PlayerEngine.lastTime) < 0.1) {
+                        PlayerEngine.stallCount++;
+                        if(PlayerEngine.stallCount > 3) PlayerEngine.showBuffer();
+                        if(PlayerEngine.stallCount > 6) { PlayerEngine.stallCount = 0; PlayerEngine.handleError(); }
+                    } else { 
+                        PlayerEngine.stallCount = 0; PlayerEngine.lastTime = v.currentTime; 
+                        if(PlayerEngine.isBuffering) PlayerEngine.hideBuffer();
+                    }
+                }, 2000);
+            },
+            stopMonitor: function() { if(this.monitorTimer) clearInterval(this.monitorTimer); },
+            
+            handleError: function() {
+                if (this.retryCount < this.maxRetries) {
+                    this.retryCount++;
+                    this.showBuffer();
+                    this.resetDOM();
+                    
+                    var delay = Math.min(1000 * Math.pow(1.5, this.retryCount), 5000);
+                    setTimeout(function() { 
+                        if(PlayerEngine.video && PlayerEngine.url) {
+                            PlayerEngine.video.src = PlayerEngine.url;
+                            safePlay(PlayerEngine.video);
+                        }
+                    }, delay);
+                } else {
+                    this.hardStop();
+                }
+            },
+            
+            hardStop: function() { 
+                this.stopMonitor(); 
+                this.resetDOM();
+                this.url = null;
+                this.hideBuffer();
+            }
+        };
+
+        var App = {
+            validCategories: null, scr: 0, zone: 0, idx: 0, lastCatIdx: -1, creds: {}, fullData: [], playingId: null,
+            cfg: { filter: false, format: 'ts_native' }, userInfo: null, lastEnter: 0, categoryDataCache: null, 
+            lastScreenSwitch: 0, lastTap: 0, tapTimer: null,
+
+            pad: function(n) { return (n < 10) ? ("0" + n) : n; },
+            smartSort: function(a, b) { var nameA = (a.name || a.title || "").toLowerCase(); var nameB = (b.name || b.title || "").toLowerCase(); try { return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' }); } catch (e) { return nameA < nameB ? -1 : 1; } },
+
+            init: function() {
+                FavManager.init(); 
+                
+                if(localStorage.getItem('rc_cfg_filter')) this.cfg.filter = (localStorage.getItem('rc_cfg_filter') === 'true');
+                var savedFmt = localStorage.getItem('rc_cfg_format'); this.cfg.format = (savedFmt === 'm3u8_native' || savedFmt === 'ts_native') ? savedFmt : 'ts_native'; 
+                this.updateCfgUI();
+                PlayerEngine.init(); 
+
+                var splash = document.getElementById('splash-screen');
+                if(splash) { splash.style.display = 'flex'; splash.style.opacity = '1'; }
+
+                if(localStorage.getItem('rc_h')) {
+                    document.getElementById('i0').value = localStorage.getItem('rc_h'); 
+                    document.getElementById('i1').value = localStorage.getItem('rc_u'); 
+                    document.getElementById('i2').value = localStorage.getItem('rc_p');
+                    App.login(true);
+                } else {
+                    setTimeout(function() {
+                        if(splash) {
+                            splash.style.opacity = '0';
+                            setTimeout(function() { splash.style.display = 'none'; }, 500);
+                        }
+                        App.setScr(0);
+                    }, 2000);
+                }
+            },
+
+            toggleCfg: function(type) { if(type === 'filter') { this.cfg.filter = !this.cfg.filter; localStorage.setItem('rc_cfg_filter', this.cfg.filter); } this.updateCfgUI(); },
+            toggleFormat: function() { this.cfg.format = (this.cfg.format === 'ts_native') ? 'm3u8_native' : 'ts_native'; localStorage.setItem('rc_cfg_format', this.cfg.format); this.updateCfgUI(); },
+            updateCfgUI: function() { 
+                document.getElementById('lbl-filter').innerText = this.cfg.filter ? 'SIM' : 'NÃO'; 
+                document.getElementById('s1').style.borderColor = this.cfg.filter ? '#00C851' : '#333'; 
+                document.getElementById('lbl-filter').style.color = this.cfg.filter ? '#00C851' : '#888'; 
+                document.getElementById('lbl-format').innerText = this.cfg.format === 'm3u8_native' ? "M3U8 NAT" : "TS NAT"; 
+                document.getElementById('s2').style.borderColor = (this.cfg.format !== 'ts_native') ? '#00C851' : '#333'; 
+                document.getElementById('lbl-format').style.color = (this.cfg.format !== 'ts_native') ? '#00C851' : '#888'; 
+            },
+
+            req: function(url, cb) { 
+                var x = new XMLHttpRequest(); var cacheBuster = (url.indexOf('?') > -1 ? '&' : '?') + '_t=' + new Date().getTime(); 
+                x.open("GET", url + cacheBuster, true); x.timeout = 20000; 
+                x.onload = function() { if(x.status===200) { try { var json = JSON.parse(x.responseText); cb(json); } catch(e) { cb(null); } } else { cb(null); } x = null; }; 
+                x.onerror = function() { cb('ERR_NET'); x = null; }; x.ontimeout = function() { cb('ERR_NET'); x = null; }; x.send(); 
+            },
+
+            login: function(isAuto) {
+                var h = document.getElementById('i0').value.trim(); var u = document.getElementById('i1').value.trim(); var p = document.getElementById('i2').value.trim();
+                if(h.endsWith('/')) h = h.slice(0, -1); if(h.indexOf('http') === -1) h = 'http://' + h;
+                
+                var splash = document.getElementById('splash-screen');
+                if(!isAuto && splash) { 
+                    splash.style.display = 'flex'; 
+                    setTimeout(function(){ splash.style.opacity = '1'; }, 10); 
+                    requestNativeFullscreen(document.documentElement); 
+                } 
+
+                this.req(h+"/player_api.php?username="+u+"&password="+p, function(d){
+                    if(splash) {
+                        splash.style.opacity = '0';
+                        setTimeout(function(){ splash.style.display = 'none'; }, 500);
+                    }
+
+                    if(d === 'ERR_NET') { 
+                        if(isAuto) { 
+                            if(splash) { splash.style.display = 'flex'; splash.style.opacity = '1'; }
+                            setTimeout(function(){ App.login(true); }, 5000); 
+                        } 
+                        else { App.setScr(0); document.getElementById('msg-login').innerHTML = 'Falha de Conexão. Verifique os dados.'; } return; 
+                    }
+                    if(d && d.user_info && d.user_info.auth==1) {
+                        App.creds={h:h,u:u,p:p}; localStorage.setItem('rc_h', h); localStorage.setItem('rc_u', u); localStorage.setItem('rc_p', p); App.userInfo = d.user_info; var info = d.user_info;
+                        
+                        var exp = info.exp_date ? new Date(info.exp_date*1000).toLocaleDateString('pt-BR') : 'Ilimitado'; 
+                        var conn = (info.active_cons || 0) + " / " + (info.max_connections || 1);
+                        
+                        // Populando UI Panels (Linha de info da TV e Configurações)
+                        document.getElementById('ui-user').innerText = info.username || u;
+                        document.getElementById('ui-exp').innerText = exp;
+                        document.getElementById('ui-conn').innerText = conn;
+                        
+                        document.getElementById('set-user').innerText = info.username || u; 
+                        document.getElementById('set-exp').innerText = exp; 
+                        document.getElementById('set-conn').innerText = conn; 
+
+                        // Vai direto para a Live TV (Nível 1)
+                        App.loadLiveTV(true);
+                    } else { App.setScr(0); document.getElementById('msg-login').innerText = 'Login Inválido. Verifique suas credenciais.'; localStorage.clear(); }
+                });
+            },
+            
+            logout: function() { PlayerEngine.hardStop(); localStorage.clear(); location.reload(); },
+
+            setScr: function(n) {
+                this.lastScreenSwitch = new Date().getTime(); 
+                var layers = document.querySelectorAll('.layer'); for(var i=0; i<layers.length; i++) { layers[i].classList.add('hide'); }
+                if(n===0) { PlayerEngine.hardStop(); document.getElementById('login-layer').classList.remove('hide'); }
+                if(n===1) { document.getElementById('content-layer').classList.remove('hide'); }
+                if(n===2) { document.getElementById('settings-layer').classList.remove('hide'); }
+                this.scr=n; this.zone=0; this.idx=0; this.updateFocus();
+            },
+
+            openSettings: function() { this.setScr(2); this.idx = 0; this.updateFocus(); requestNativeFullscreen(); }, 
+            closeSettings: function() { this.setScr(1); this.syncFocusToPlaying(); this.updateFocus(); },
+
+            countGlobal: function() {
+                var countEl = document.getElementById('item-count');
+                var cacheKey = 'rc_total_live_' + App.creds.u; var cached = localStorage.getItem(cacheKey);
+                if(cached) { if(countEl) countEl.innerText = "TOTAL: " + cached + " CANAIS"; } else { if(countEl) countEl.innerText = "CONTANDO..."; }
+
+                this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_live_streams", function(d){
+                    if(d && d!=='ERR_NET') {
+                        var total = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado'];
+                        if(App.cfg.filter) { for(var i=0; i<d.length; i++) { var nome = (d[i].name || d[i].title || "").toLowerCase(); var show = true; for(var j=0; j<junk.length; j++) { if(nome.indexOf(junk[j]) > -1) { show = false; break; } } if(show) total++; } } else { total = d.length; }
+                        d = null; try { localStorage.setItem(cacheKey, total); } catch(e) {}
+                        if(countEl) countEl.innerText = "TOTAL: " + total + " CANAIS";
+                    }
+                });
+            },
+
+            loadLiveTV: function(isTrusted) {
+                if (!isTrusted && new Date().getTime() - (this.lastScreenSwitch || 0) < 500) return;
+                
+                this.fullData = []; this.categoryDataCache = null; this.lastCatIdx = -1;
+                document.getElementById('cat-list').innerHTML = ''; 
+                document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-weight: bold; font-size: 2vh; margin-top: 20vh;">&larr; SELECIONE UMA CATEGORIA</div>';
+                
+                PlayerEngine.hardStop(); this.resetInfo(); requestNativeFullscreen();
+                this.playingId = null; this.validCategories = null; this.setScr(1);
+                
+                document.getElementById('search').value = ''; 
+                setTimeout(function() { App.countGlobal(); }, 500); 
+
+                var renderCats = function(d) {
+                    var h = []; h.push('<div class="cat-item" role="button" tabindex="-1" id="c0" data-id="fav" onclick="App.catClick(0, true)">⭐ FAVORITOS</div>'); 
+                    var count = 0; var junk = ['adulto','xxx','sex','porn','+18','teste','off','expirado']; App.validCategories = {};
+                    for(var i=0;i<d.length;i++) {
+                        var nome = d[i].category_name; var show = true;
+                        if(App.cfg.filter) { var lower = nome.toLowerCase(); for(var j=0; j<junk.length; j++) { if(lower.indexOf(junk[j]) > -1) { show = false; break; } } }
+                        if(show) { count++; h.push('<div class="cat-item" role="button" tabindex="-1" id="c'+count+'" data-id="'+d[i].category_id+'" onclick="App.catClick('+count+', true)">'+nome+'</div>'); App.validCategories[String(d[i].category_id)] = true; }
+                    }
+                    document.getElementById('cat-list').innerHTML = h.join(''); if(App.zone===0 && App.idx===0) { App.updateFocus(); }
+                };
+
+                this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_live_categories", function(d){
+                    if(d && d!=='ERR_NET') { renderCats(d); App.zone=0; App.idx=0; App.updateFocus(); }
+                });
+            },
+            
+            resetInfo: function() { document.getElementById('meta-title').innerHTML = '<span style="color:#fff">SKY</span>&nbsp;GOLD'; document.getElementById('meta-desc').innerText = "Escolha um canal na lista para assistir."; PlayerEngine.hardStop(); },
+            
+            catClick: function(i, isTrusted) { 
+                if (!isTrusted && new Date().getTime() - (this.lastScreenSwitch || 0) < 500) return;
+                if (i === -1) return; this.idx=i; this.zone=0; this.loadContent(i, true); 
+            },
+
+            loadContent: function(catIdx, jumpFocus) {
+                if (catIdx === -1) return; document.getElementById('item-list').innerHTML = ''; this.lastCatIdx = catIdx; 
+                var el = document.getElementById('c'+catIdx); if(!el) return;
+                var cid = el.getAttribute('data-id'); 
+                var catItems = document.querySelectorAll('.cat-item'); for(var j=0; j<catItems.length; j++) { catItems[j].classList.remove('active'); } el.classList.add('active');
+                
+                document.getElementById('search').value = ''; 
+                document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color: var(--main-color); font-size: 30px;"><i class="fas fa-circle-notch fa-spin"></i></div>';
+
+                var onData = function(d) { 
+                    if(d && d!=='ERR_NET') { 
+                        var junk = ['adulto','xxx','sex','porn','+18','teste','off'];
+                        App.fullData = [];
+                        
+                        if(App.cfg.filter) {
+                            var res = []; for(var k=0; k<d.length; k++) { var nome = (d[k].name || d[k].title || "").toLowerCase(); var show = true; for(var j=0; j<junk.length; j++) { if(nome.indexOf(junk[j]) > -1) { show = false; break; } } if(show) res.push(d[k]); }
+                            App.fullData = res;
+                        } else { App.fullData = d; }
+                        
+                        App.categoryDataCache = App.fullData;
+                        if(jumpFocus && App.fullData.length > 0) { App.zone = 2; App.idx = 0; }
+                        App.renderList(); 
+                    } else { document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center;">Vazio</div>'; }
+                };
+
+                if(cid === 'fav') { 
+                    this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_live_streams", function(d){ 
+                        if(d && d!=='ERR_NET') { 
+                            var favs = d.filter(function(x){ var fId = x.stream_id || x.id; return FavManager.isFav(fId); }); 
+                            App.fullData = favs; App.categoryDataCache = favs; if(jumpFocus && favs.length > 0) { App.zone = 2; App.idx = 0; } App.renderList(); 
+                        } 
+                    }); 
+                } 
+                else { 
+                    this.req(this.creds.h+"/player_api.php?username="+this.creds.u+"&password="+this.creds.p+"&action=get_live_streams&category_id="+cid, function(d){
+                        if(d && d!=='ERR_NET') { onData(d); } else { onData(null); }
+                    }); 
+                }
+            },
+
+            renderList: function() {
+                var d = this.fullData; var max = d.length; var listEl = document.getElementById('item-list'); 
+                var countEl = document.getElementById('item-count'); if(countEl) countEl.innerText = "TOTAL: " + max;
+                if(max===0) { listEl.innerHTML = '<div style="padding:20px; text-align:center;">Vazio</div>'; return; }
+
+                var h = [];
+                for(var i = 0; i < max; i++) {
+                    var n = d[i].name || d[i].title; var id = d[i].stream_id || d[i].id; 
+                    var icn = FavManager.isFav(id) ? '<i class="fas fa-star fav-icon"></i>' : '';
+                    var playingClass = (App.playingId == id) ? ' playing' : ''; 
+                    h.push('<div class="item' + playingClass + '" role="button" tabindex="-1" id="row-'+i+'" onclick="App.itemClick('+i+', true)">'+n+icn+'</div>');
+                }
+                listEl.innerHTML = h.join(''); 
+                this.updateFocus();
+            },
+
+            itemClick: function(i, isTrusted) { 
+                if (!isTrusted && new Date().getTime() - (this.lastScreenSwitch || 0) < 500) return;
+                this.idx=i; this.zone=2; this.updateFocus(); this.clickItem(); requestNativeFullscreen(); 
+            },
+            
+            clickItem: function() { 
+                var item = this.fullData[this.idx]; 
+                if(item) { this.playStream(item); } 
+            },
+
+            playStream: function(item) {
+                var id = item.stream_id || item.id; 
+                var ext = this.cfg.format === 'm3u8_native' ? 'm3u8' : 'ts'; 
+                var url = this.creds.h+"/live/"+this.creds.u+"/"+this.creds.p+"/"+id+"."+ext;
+                
+                this.playingId = id; 
+                document.getElementById('meta-title').innerText = item.name || item.title; 
+                
+                PlayerEngine.play(url); 
+                
+                var items = document.querySelectorAll('.item'); for(var k=0; k<items.length; k++) { items[k].classList.remove('playing'); }
+                var r = document.getElementById('row-'+this.idx); if(r) r.classList.add('playing'); 
+            },
+            
+            switchChannel: function(dir) {
+                if (!this.fullData || this.fullData.length === 0) return;
+                var n = this.idx + dir;
+                if (n < 0) n = this.fullData.length - 1;
+                if (n >= this.fullData.length) n = 0;
+                this.itemClick(n, true);
+            },
+
+            syncFocusToPlaying: function() { 
+                if(!this.playingId) return; 
+                for(var i=0; i<this.fullData.length; i++) { 
+                    var id = this.fullData[i].stream_id || this.fullData[i].id; 
+                    if(id == this.playingId) { 
+                        this.idx = i; this.renderList(); this.updateFocus(); return; 
+                    } 
+                } 
+            },
+            
+            removeAccents: function(s) { if(!s) return ""; var str = s.toLowerCase(); str = str.replace(/[áàãâä]/g, 'a'); str = str.replace(/[éèêë]/g, 'e'); str = str.replace(/[íìîï]/g, 'i'); str = str.replace(/[óòõôö]/g, 'o'); str = str.replace(/[úùûü]/g, 'u'); str = str.replace(/[ç]/g, 'c'); return str; },
+
+            doSearch: function(isGlobal) {
+                var rawT = document.getElementById('search').value; 
+                if(rawT.length === 0) { 
+                    if(App.lastCatIdx > -1) { App.loadContent(App.lastCatIdx); } else { document.getElementById('item-list').innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-weight: bold; font-size: 2vh; margin-top: 20vh;">&larr; SELECIONE UMA CATEGORIA</div>'; App.fullData = []; App.renderList(); } return; 
+                }
+                if(rawT.length < 2) return; var tStr = App.removeAccents(rawT); var listEl = document.getElementById('item-list');
+                
+                if (isGlobal) {
+                    listEl.innerHTML = '<div style="padding:20px; text-align:center; color: var(--main-color); font-size: 2vh;"><i class="fas fa-circle-notch fa-spin" style="font-size: 5vh; margin-bottom: 15px;"></i><br><br>BUSCANDO...</div>';
+                    App.req(App.creds.h+"/player_api.php?username="+App.creds.u+"&password="+App.creds.p+"&action=get_live_streams", function(d) { 
+                        if(d && d !== 'ERR_NET') { 
+                            var res = []; var maxResults = 100; var junk = ['adulto','xxx','sex','porn','+18'];
+                            for(var i=0; i<d.length; i++) { 
+                                var nome = d[i].name || d[i].title || ""; var show = true;
+                                if(App.cfg.filter) { var lowerNome = nome.toLowerCase(); for(var j=0; j<junk.length; j++) { if(lowerNome.indexOf(junk[j]) > -1) { show = false; break; } } }
+                                if(show && App.removeAccents(nome).indexOf(tStr) > -1) { res.push(d[i]); if(res.length >= maxResults) break; } 
+                            }
+                            d = null; 
+                            if (res.length > 0) { res.sort(App.smartSort); App.fullData = res; App.zone = 2; App.idx = 0; App.renderList(); } 
+                            else { listEl.innerHTML = '<div style="padding:20px; text-align:center;">Nenhum resultado encontrado.</div>'; var countEl = document.getElementById('item-count'); if(countEl) countEl.innerText = "TOTAL: 0"; }
+                        } else { listEl.innerHTML = '<div style="padding:20px; text-align:center;">Erro na conexão com o servidor.</div>'; }
+                    });
+                } else {
+                    listEl.innerHTML = '<div style="padding:20px; text-align:center; color: var(--main-color); font-size: 30px;"><i class="fas fa-circle-notch fa-spin"></i></div>';
+                    setTimeout(function() {
+                        var baseData = App.categoryDataCache || App.fullData;
+                        if (!baseData || baseData.length === 0) { listEl.innerHTML = '<div style="padding:20px; text-align:center;">Vazio</div>'; return; }
+                        var res = []; for(var i=0; i<baseData.length; i++) { var nome = baseData[i].name || baseData[i].title || ""; if(App.removeAccents(nome).indexOf(tStr) > -1) { res.push(baseData[i]); } }
+                        if (res.length > 0) { App.fullData = res; App.renderList(); } else { listEl.innerHTML = '<div style="padding:20px; text-align:center; font-size:1.8vh; color:#888;">Não encontrado nesta categoria.<br><br><b style="color:var(--main-color);">APERTE ENTER PARA BUSCA GLOBAL</b></div>'; }
+                    }, 50);
+                }
+            },
+            
+            handleVideoTap: function(e) {
+                e.preventDefault(); if(!App.playingId) return; 
+                var now = new Date().getTime(); var timeDiff = now - (App.lastTap || 0); App.lastTap = now;
+
+                if (timeDiff < 300 && timeDiff > 0) { 
+                    clearTimeout(App.tapTimer); 
+                    App.toggleFull(); 
+                } else { 
+                    App.tapTimer = setTimeout(function() { App.toggleFull(); App.zone = 3; App.updateFocus(); }, 300); 
+                }
+            },
+            
+            toggleFull: function() { if(!this.playingId) return; var b = document.getElementById('vid-box'); if(b.classList.contains('fs')) { this.exitFull(); } else { b.classList.add('fs'); requestNativeFullscreen(b); } },
+            exitFull: function() { document.getElementById('vid-box').classList.remove('fs'); try { if (document.exitFullscreen) { document.exitFullscreen(); } else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } } catch(e) {} this.syncFocusToPlaying(); },
+            
+            back: function(isTrusted) {
+                if (!isTrusted && new Date().getTime() - (this.lastScreenSwitch || 0) < 500) return;
+                if(document.getElementById('vid-box').classList.contains('fs')) { this.exitFull(); return; }
+                if(this.zone===3) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); return; }
+                if(this.zone===2) { this.zone=0; this.idx=(this.lastCatIdx > -1 ? this.lastCatIdx : 0); this.updateFocus(); return; }
+                if(this.zone===1) { this.zone=2; this.idx=0; this.updateFocus(); return; }
+                if(this.zone===0) { this.openSettings(); return; } 
+            },
+            
+            updateFocus: function() {
+                var focusedItems = document.querySelectorAll('.focused'); for(var k=0; k<focusedItems.length; k++) { focusedItems[k].classList.remove('focused'); }
+                var el; 
+                if(this.scr===0) el=document.getElementById('i'+this.idx); 
+                if(this.scr===2) el=document.getElementById('s'+this.idx);
+                if(this.scr===1) { if(this.zone===0) el=document.getElementById('c'+this.idx); if(this.zone===1) el=document.getElementById('search'); if(this.zone===2) el=document.getElementById('row-'+this.idx); if(this.zone===3) el=document.getElementById('vid-box'); }
+                
+                if(el) { 
+                    el.classList.add('focused'); 
+                    if(el.tagName==='INPUT') { try { el.focus({preventScroll:true}); } catch(e) { el.focus(); } } 
+                    else { var inps = document.querySelectorAll('input'); for(var i=0; i<inps.length; i++) { inps[i].blur(); } if (document.activeElement && document.activeElement !== document.body) { try { document.activeElement.blur(); } catch(e) {} } } 
+                    
+                    if(el.tagName!=='INPUT') {
+                        var parentContainer = el.parentElement;
+                        while(parentContainer && parentContainer !== document.body) {
+                            var style = window.getComputedStyle(parentContainer);
+                            if(style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                                try { parentContainer.scrollTo({ top: el.offsetTop - (parentContainer.clientHeight / 2) + (el.clientHeight / 2), behavior: 'smooth' }); } 
+                                catch(e) { parentContainer.scrollTop = el.offsetTop - (parentContainer.clientHeight / 2) + (el.clientHeight / 2); } break;
+                            }
+                            parentContainer = parentContainer.parentElement;
+                        }
+                    }
+                }
+            },
+            
+            move: function(d) {
+                var s = this.scr;
+                if(s===0) { if(d===1 && this.idx < 3) this.idx++; if(d===0 && this.idx > 0) this.idx--; }
+                else if(s===2) { if(this.idx === 0) { if(d===1) this.idx = 1; } else if(this.idx === 1) { if(d===1) this.idx = 3; else if(d===3) this.idx = 2; else if(d===0) this.idx = 0; } else if(this.idx === 2) { if(d===1) this.idx = 3; else if(d===2) this.idx = 1; else if(d===0) this.idx = 0; } else if(this.idx === 3) { if(d===1) this.idx = 4; else if(d===0) this.idx = 1; } else if(this.idx === 4) { if(d===0) this.idx = 3; } }
+                else if(s===1) {
+                    if(this.zone===3) { if(d===2) { this.zone=2; this.syncFocusToPlaying(); this.updateFocus(); } return; }
+                    if(this.zone===0) { var max = document.getElementById('cat-list').children.length-1; if(d===1 && this.idx<max) this.idx++; if(d===0 && this.idx>0) this.idx--; if(d===3 && App.fullData.length>0) { this.zone=2; this.idx=0; App.renderList(); } }
+                    else if(this.zone===2) { 
+                        var dataLen = App.fullData.length;
+                        if(d===1) { if(typeof this.idx === 'number' && this.idx < dataLen - 1) { this.idx++; } }
+                        else if(d===0) { if(typeof this.idx === 'number' && this.idx > 0) { this.idx--; } else if(this.idx === 0) { this.zone = 1; } } 
+                        else if(d===2) { this.zone=0; this.idx=(this.lastCatIdx > -1 ? this.lastCatIdx : 0); } 
+                        else if(d===3) { this.zone=3; }
+                    } else if(this.zone===1) { if(d===1) { this.zone=2; this.idx=0; } if(d===2) { this.zone=0; this.idx=(this.lastCatIdx > -1 ? this.lastCatIdx : 0); } }
+                }
+                this.updateFocus();
+            },
+
+            enter: function() {
+                var now = new Date().getTime(); if(now - this.lastEnter < 400) return; this.lastEnter = now;
+                var currentScr = this.scr; 
+                if(currentScr===0) { if(this.idx === 3) this.login(false); else if(this.idx < 3) this.move(1); }
+                else if(currentScr===2) { if(this.idx === 1) this.toggleCfg('filter'); else if(this.idx === 2) this.toggleFormat(); else if(this.idx === 3) this.closeSettings(); else if(this.idx === 4) this.logout(); }
+                else if(currentScr===1) { if(this.zone===0) this.catClick(this.idx, true); else if(this.zone===1) { document.getElementById('search').blur(); this.doSearch(true); } else if(this.zone===2) { this.clickItem(); } else if(this.zone===3) this.toggleFull(); }
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            var k = e.keyCode;
+            
+            var isLeft = (k===37);
+            var isUp = (k===38);
+            var isRight = (k===39);
+            var isDown = (k===40);
+            var isEnter = (k===13 || k===295); 
+            var isBack = (k===8 || k===27 || k===461 || k===10009 || k===88); 
+            
+            var isRed = (k===403 || k===82);
+            var isGreen = (k===404 || k===71);
+            var isYellow = (k===405 || k===89);
+            var isBlue = (k===406 || k===66 || k===275); 
+            var isChUp = (k===427 || k===33); 
+            var isChDown = (k===428 || k===34); 
+
+            if(document.activeElement && document.activeElement.tagName === 'INPUT' && App.scr === 0) { if(isEnter || isDown) { e.preventDefault(); App.move(1); return; } if(isUp) { e.preventDefault(); App.move(0); return; } return; }
+            if(App.scr === 1 && document.activeElement && document.activeElement.tagName === 'INPUT') { if(isEnter) { e.preventDefault(); document.activeElement.blur(); App.doSearch(true); return; } if(isDown) { e.preventDefault(); document.activeElement.blur(); App.zone=2; App.idx=0; App.updateFocus(); return; } if(isLeft || isRight) { return; } return; }
+            
+            if(App.scr === 1) {
+                if(isChUp) { e.preventDefault(); App.switchChannel(1); return; }
+                if(isChDown) { e.preventDefault(); App.switchChannel(-1); return; }
+            }
+
+            if(k===48 || k===96) { if(App.scr===1 && App.zone===2) { var it=App.fullData[App.idx]; if(it) { var itId = it.stream_id || it.id; FavManager.toggle(itId); } } }
+            
+            var isFull = document.getElementById('vid-box').classList.contains('fs');
+            
+            if(isFull) { 
+                e.preventDefault(); 
+                if(isRed || isBack) { App.exitFull(); return; } 
+                return; 
+            }
+            
+            if(isLeft) { e.preventDefault(); App.move(2); } 
+            if(isUp) { e.preventDefault(); App.move(0); } 
+            if(isRight) { e.preventDefault(); App.move(3); } 
+            if(isDown) { e.preventDefault(); App.move(1); }
+            if(isEnter) { e.preventDefault(); App.enter(); } 
+            
+            if(isBack) { 
+                e.preventDefault(); 
+                if(App.scr===2) { App.closeSettings(); return; } 
+                else if(App.scr>0) { App.back(true); return; } 
+            }
+            
+            if(isRed) if(App.scr===1) App.toggleFull(); 
+            if(isGreen) if(App.scr===1) { App.zone=0; App.idx=0; App.updateFocus(); } 
+            if(isYellow) if(App.scr===1) { App.zone=1; App.updateFocus(); } 
+            if(isBlue) { e.preventDefault(); if(App.scr===1) App.openSettings(); } 
+        });
+
+        window.addEventListener('beforeunload', function() { PlayerEngine.hardStop(); });
+        window.addEventListener('unload', function() { PlayerEngine.hardStop(); });
+        window.addEventListener('pagehide', function() { PlayerEngine.hardStop(); });
+    </script>
+</body>
+</html>
